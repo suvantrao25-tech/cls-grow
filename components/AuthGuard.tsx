@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "./Header";
-import Sidebar from "./Sidebar";
 import { supabase } from "@/lib/supabase";
 
-export default function DashboardLayout({
+export default function AuthGuard({
   children,
 }: {
   children: React.ReactNode;
@@ -17,20 +15,30 @@ export default function DashboardLayout({
   useEffect(() => {
     let mounted = true;
 
-    async function checkSession() {
-      const { data } = await supabase.auth.getSession();
+    async function checkAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!data.session) {
+      if (!mounted) {
+        return;
+      }
+
+      if (!user) {
         router.replace("/login");
         return;
       }
 
-      if (mounted) {
-        setChecking(false);
+      if (!user.email_confirmed_at) {
+        await supabase.auth.signOut();
+        router.replace("/login");
+        return;
       }
+
+      setChecking(false);
     }
 
-    checkSession();
+    checkAuth();
 
     const {
       data: { subscription },
@@ -49,30 +57,12 @@ export default function DashboardLayout({
   if (checking) {
     return (
       <main className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold mx-auto">
-            C
-          </div>
-
-          <p className="mt-4 text-gray-600">
-            Loading CLS GROW...
-          </p>
+        <div className="bg-white rounded-xl shadow p-6 text-gray-600">
+          Checking your account...
         </div>
       </main>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-100">
-      <Header />
-
-      <div className="flex">
-        <Sidebar />
-
-        <main className="flex-1 p-8">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }

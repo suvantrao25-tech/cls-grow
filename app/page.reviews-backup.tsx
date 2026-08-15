@@ -1,22 +1,19 @@
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
-import AuthGuard from "@/components/AuthGuard";
 import BusinessProfileCard from "@/components/BusinessProfileCard";
 import GrowthScoreCard from "@/components/GrowthScoreCard";
 import BusinessProfileForm from "@/components/BusinessProfileForm";
 import AISuggestionsCard from "@/components/AISuggestionsCard";
 import GrowthTasksCard from "@/components/GrowthTasksCard";
 import GrowthAuditReport from "@/components/GrowthAuditReport";
-import ReviewsCard from "@/components/ReviewsCard";
 import { useBusiness } from "@/components/BusinessContext";
 
 export default function Home() {
   const { audit, completedTasks } = useBusiness();
 
   return (
-    <AuthGuard>
-      <DashboardLayout>
+    <DashboardLayout>
       <h1 className="text-3xl font-bold text-gray-800">
         Business Dashboard
       </h1>
@@ -78,15 +75,8 @@ export default function Home() {
       </div>
 
       <div className="mt-8">
-        <ReviewsCard />
-      </div>
-
-      <div className="mt-8">
         <BusinessProfileForm />
       </div>
-      </DashboardLayout>
-    </AuthGuard>
+    </DashboardLayout>
   );
 }
-
-

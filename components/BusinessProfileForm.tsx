@@ -1,28 +1,117 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBusiness } from "./BusinessContext";
+import { supabase } from "@/lib/supabase";
+
 export default function BusinessProfileForm() {
-  const { setBusiness } = useBusiness();
+  const { business, setBusiness } = useBusiness();
+
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
+  const [loading, setLoading] = useState(false);
 
-  setBusiness({
-    businessName,
-    category,
-    location,
-    phone,
-    website,
-  });
+  useEffect(() => {
+    setBusinessName(business.businessName || "");
+    setCategory(business.category || "");
+    setLocation(business.location || "");
+    setPhone(business.phone || "");
+    setWebsite(business.website || "");
+  }, [business]);
 
-  alert("Business Profile Saved!");
-}
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    setLoading(true);
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error("User Error:", userError);
+      alert("Please login again.");
+      setLoading(false);
+      return;
+    }
+
+    const businessData = {
+      businessName,
+      category,
+      location,
+      phone,
+      website,
+    };
+
+    const { data: existingProfile, error: existingError } =
+      await supabase
+        .from("business_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (existingError) {
+      console.error("Profile Check Error:", existingError);
+      alert(`Profile check failed: ${existingError.message}`);
+      setLoading(false);
+      return;
+    }
+
+    let saveError = null;
+
+    if (existingProfile) {
+      const result = await supabase
+        .from("business_profiles")
+        .update({
+          business_name: businessName,
+          category,
+          location,
+          phone,
+          website,
+        })
+        .eq("id", existingProfile.id)
+        .eq("user_id", user.id);
+
+      saveError = result.error;
+    } else {
+      const result = await supabase
+        .from("business_profiles")
+        .insert([
+          {
+            user_id: user.id,
+            business_name: businessName,
+            category,
+            location,
+            phone,
+            website,
+          },
+        ]);
+
+      saveError = result.error;
+    }
+
+    if (saveError) {
+      console.error("Supabase Error Message:", saveError.message);
+      console.error("Supabase Error Code:", saveError.code);
+      console.error("Supabase Error Details:", saveError.details);
+      console.error("Supabase Error Hint:", saveError.hint);
+
+      alert(`Profile save failed: ${saveError.message}`);
+      setLoading(false);
+      return;
+    }
+
+    setBusiness(businessData);
+
+    alert("Business Profile Saved!");
+
+    setLoading(false);
+  }
 
   return (
     <div className="bg-white rounded-xl shadow p-6 mt-8">
@@ -37,6 +126,7 @@ export default function BusinessProfileForm() {
           placeholder="Business Name"
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
+          required
         />
 
         <input
@@ -44,6 +134,7 @@ export default function BusinessProfileForm() {
           placeholder="Category (Medical, Shop, Salon...)"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          required
         />
 
         <input
@@ -51,6 +142,7 @@ export default function BusinessProfileForm() {
           placeholder="Location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
+          required
         />
 
         <input
@@ -58,6 +150,7 @@ export default function BusinessProfileForm() {
           placeholder="Phone Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          required
         />
 
         <input
@@ -69,9 +162,10 @@ export default function BusinessProfileForm() {
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg"
         >
-          Save Profile
+          {loading ? "Saving..." : "Save Profile"}
         </button>
 
       </form>
