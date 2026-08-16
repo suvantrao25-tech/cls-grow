@@ -1,11 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase-browser";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -20,24 +19,53 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
+    if (loginError || !data.user) {
+      setLoading(false);
+      setError("Invalid admin email or password.");
       return;
     }
 
-    router.push("/");
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    const accessToken = sessionData.session?.access_token;
+
+    if (!accessToken) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setError("Admin session could not be established.");
+      return;
+    }
+
+    const verifyResponse = await fetch("/api/admin/verify", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: "no-store",
+    });
+
+    const verifyResult = await verifyResponse.json();
+
+    if (!verifyResponse.ok || !verifyResult.authorized) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setError("You are not authorized to access the CLS GROW Admin Panel.");
+      return;
+    }
+
+    setLoading(false);
+    router.replace("/admin/dashboard");
     router.refresh();
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
@@ -50,18 +78,18 @@ export default function LoginPage() {
           </h1>
 
           <p className="text-gray-500 mt-2">
-            Grow your business smarter.
+            Admin Control Panel
           </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border p-8">
 
           <h2 className="text-2xl font-bold text-gray-900">
-            Welcome back
+            Admin Login
           </h2>
 
           <p className="text-gray-500 mt-1">
-            Login to your CLS GROW account.
+            Sign in to manage CLS GROW.
           </p>
 
           {error && (
@@ -74,40 +102,33 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                Admin Email
               </label>
 
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="admin@example.com"
                 required
+                autoComplete="email"
                 className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Password
-                </label>
-
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
 
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Enter admin password"
                   required
+                  autoComplete="current-password"
                   className="w-full border border-gray-300 rounded-lg p-3 pr-20 outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
@@ -126,28 +147,20 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition"
             >
-              {loading ? "Signing in..." : "Login"}
+              {loading ? "Verifying Admin..." : "Admin Login"}
             </button>
 
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            Don't have an account?{" "}
-            <Link
-              href="/signup"
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              Create account
-            </Link>
-          </div>
-
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Ãƒâ€šÃ‚Â© 2026 CLS GROW. All rights reserved.
+          CLS GROW Admin • Authorized Access Only
         </p>
 
       </div>
     </main>
   );
 }
+
+
