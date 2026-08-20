@@ -39,7 +39,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: "https://grow.creatorlaunchspace.com/auth/callback",
       },
     });
 
@@ -192,3 +192,5 @@ export default function SignupPage() {
     </main>
   );
 }
+
+
