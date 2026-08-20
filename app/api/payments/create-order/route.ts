@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import Razorpay from "razorpay";
@@ -54,12 +54,35 @@ export async function POST(request: Request) {
       }
     );
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const authorization = request.headers.get("authorization");
 
-    if (userError || !user) {
+    let user;
+
+    if (authorization?.startsWith("Bearer ")) {
+      const accessToken = authorization.replace("Bearer ", "");
+
+      const {
+        data: { user: tokenUser },
+        error: tokenError,
+      } = await supabase.auth.getUser(accessToken);
+
+      if (!tokenError && tokenUser) {
+        user = tokenUser;
+      }
+    }
+
+    if (!user) {
+      const {
+        data: { user: cookieUser },
+        error: cookieError,
+      } = await supabase.auth.getUser();
+
+      if (!cookieError && cookieUser) {
+        user = cookieUser;
+      }
+    }
+
+    if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -111,3 +134,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
