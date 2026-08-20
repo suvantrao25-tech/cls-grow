@@ -99,10 +99,18 @@ export default function AdminDashboardPage() {
   }, [router]);
 
   async function handleLogout() {
-    await supabase.auth.signOut();
-    router.replace("/admin/login");
-    router.refresh();
+  try {
+    const { error } = await supabase.auth.signOut({
+      scope: "global",
+    });
+
+    if (error) {
+      console.error("ADMIN LOGOUT ERROR:", error);
+    }
+  } finally {
+    window.location.replace("/admin/login");
   }
+}
 
   if (loading) {
     return (

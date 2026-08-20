@@ -51,6 +51,66 @@ export async function GET(request: Request) {
       );
     }
 
+    // Run independent database queries in parallel.
+    const [
+      businessesResult,
+      growthTasksResult,
+      completedTasksResult,
+      subscriptionsResult,
+      activeSubscriptionsResult,
+      paymentsResult,
+      reviewsResult,
+      recentBusinessesResult,
+      recentSubscriptionsResult,
+    ] = await Promise.all([
+      supabase
+        .from("business_profiles")
+        .select("*", { count: "exact", head: true }),
+
+      supabase
+        .from("growth_tasks")
+        .select("*", { count: "exact", head: true }),
+
+      supabase
+        .from("growth_tasks")
+        .select("*", { count: "exact", head: true })
+        .eq("completed", true),
+
+      supabase
+        .from("subscriptions")
+        .select("*", { count: "exact", head: true }),
+
+      supabase
+        .from("subscriptions")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active"),
+
+      supabase
+        .from("payments")
+        .select("id, user_id, plan, amount, currency, status, created_at")
+        .order("created_at", { ascending: false }),
+
+      supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true }),
+
+      supabase
+        .from("business_profiles")
+        .select(
+          "id, user_id, business_name, category, location, created_at"
+        )
+        .order("created_at", { ascending: false })
+        .limit(5),
+
+      supabase
+        .from("subscriptions")
+        .select(
+          "id, user_id, plan, status, billing_cycle, amount, currency, created_at"
+        )
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ]);
+
     // Customers
     let customers = 0;
     let page = 1;
@@ -76,42 +136,18 @@ export async function GET(request: Request) {
       page++;
     }
 
-    // Businesses
-    const { count: businesses } = await supabase
-      .from("business_profiles")
-      .select("*", { count: "exact", head: true });
+    const businesses = businessesResult.count ?? 0;
+    const growthTasks = growthTasksResult.count ?? 0;
+    const completedTasks = completedTasksResult.count ?? 0;
+    const subscriptions = subscriptionsResult.count ?? 0;
+    const activeSubscriptions = activeSubscriptionsResult.count ?? 0;
+    const reviews = reviewsResult.count ?? 0;
 
-    // Growth tasks
-    const { count: growthTasks } = await supabase
-      .from("growth_tasks")
-      .select("*", { count: "exact", head: true });
-
-    const { count: completedTasks } = await supabase
-      .from("growth_tasks")
-      .select("*", { count: "exact", head: true })
-      .eq("completed", true);
-
-    // Subscriptions
-    const { count: subscriptions } = await supabase
-      .from("subscriptions")
-      .select("*", { count: "exact", head: true });
-
-    const { count: activeSubscriptions } = await supabase
-      .from("subscriptions")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "active");
-
-    // Payments
-    const { data: paymentRows, error: paymentsError } = await supabase
-      .from("payments")
-      .select("id, user_id, plan, amount, currency, status, created_at")
-      .order("created_at", { ascending: false });
-
-    if (paymentsError) {
-      console.error("PAYMENTS ERROR:", paymentsError);
+    if (paymentsResult.error) {
+      console.error("PAYMENTS ERROR:", paymentsResult.error);
     }
 
-    const payments = paymentRows ?? [];
+    const payments = paymentsResult.data ?? [];
 
     const paidPayments = payments.filter(
       (payment) =>
@@ -125,32 +161,6 @@ export async function GET(request: Request) {
       0
     );
 
-    // Reviews
-    const { count: reviews } = await supabase
-      .from("reviews")
-      .select("*", { count: "exact", head: true });
-
-    // Recent businesses
-    const { data: recentBusinesses } = await supabase
-      .from("business_profiles")
-      .select(
-        "id, user_id, business_name, category, location, created_at"
-      )
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    // Recent subscriptions
-    const { data: recentSubscriptions } = await supabase
-      .from("subscriptions")
-      .select(
-        "id, user_id, plan, status, billing_cycle, amount, currency, created_at"
-      )
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    // Recent payments
-    const recentPayments = payments.slice(0, 5);
-
     return NextResponse.json({
       authorized: true,
 
@@ -161,19 +171,19 @@ export async function GET(request: Request) {
 
       stats: {
         customers,
-        businesses: businesses ?? 0,
-        growthTasks: growthTasks ?? 0,
-        completedTasks: completedTasks ?? 0,
-        subscriptions: subscriptions ?? 0,
-        activeSubscriptions: activeSubscriptions ?? 0,
+        businesses,
+        growthTasks,
+        completedTasks,
+        subscriptions,
+        activeSubscriptions,
         payments: payments.length,
-        reviews: reviews ?? 0,
+        reviews,
         totalRevenue,
       },
 
-      recentBusinesses: recentBusinesses ?? [],
-      recentSubscriptions: recentSubscriptions ?? [],
-      recentPayments,
+      recentBusinesses: recentBusinessesResult.data ?? [],
+      recentSubscriptions: recentSubscriptionsResult.data ?? [],
+      recentPayments: payments.slice(0, 5),
     });
   } catch (error) {
     console.error("ADMIN STATS ERROR:", error);

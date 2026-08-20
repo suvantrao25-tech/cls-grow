@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -58,7 +58,7 @@ const plans = [
     description:
       "Your complete AI-powered business growth system.",
     featured: true,
-    comingSoon: false,
+    comingSoon: true,
     features: [
       "Everything in START",
       "Continuous Business Monitoring",
@@ -84,7 +84,7 @@ const plans = [
     description:
       "Advanced growth, automation and business intelligence.",
     featured: false,
-    comingSoon: false,
+    comingSoon: true,
     features: [
       "Everything in GROW",
       "Advanced Automation",
@@ -148,23 +148,52 @@ export default function SubscriptionPage() {
       }
 
       const options = {
-        key: process.env
-          .NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: data.order.amount,
-        currency: data.order.currency,
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
         name: "Creator Launch Space",
         description: `CLS GROW - ${plan}`,
-        order_id: data.order.id,
+        order_id: data.orderId,
 
-        handler: function (paymentResponse: any) {
-          console.log(
-            "Razorpay payment successful:",
-            paymentResponse
-          );
+        handler: async function (paymentResponse: any) {
+          try {
+            console.log("Razorpay payment successful:", paymentResponse);
 
-          alert(
-            "Payment successful! Verification next step mein complete hoga."
-          );
+            const verifyResponse = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_signature: paymentResponse.razorpay_signature,
+                plan,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            console.log("PAYMENT VERIFICATION RESULT:", verifyData);
+
+            if (!verifyResponse.ok || !verifyData.success) {
+              throw new Error(
+                verifyData.error || "Payment verification failed"
+              );
+            }
+
+            alert(`${plan} plan activated successfully!`);
+
+            window.location.href = "/billing";
+          } catch (error) {
+            console.error("PAYMENT VERIFICATION ERROR:", error);
+
+            alert(
+              error instanceof Error
+                ? error.message
+                : "Payment verification failed"
+            );
+          }
         },
 
         theme: {
@@ -416,3 +445,10 @@ export default function SubscriptionPage() {
     </div>
   );
 }
+
+
+
+
+
+
+

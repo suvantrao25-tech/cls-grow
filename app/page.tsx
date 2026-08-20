@@ -1,92 +1,53 @@
-"use client";
-
-import DashboardLayout from "@/components/DashboardLayout";
-import AuthGuard from "@/components/AuthGuard";
-import BusinessProfileCard from "@/components/BusinessProfileCard";
-import GrowthScoreCard from "@/components/GrowthScoreCard";
-import BusinessProfileForm from "@/components/BusinessProfileForm";
-import AISuggestionsCard from "@/components/AISuggestionsCard";
-import GrowthTasksCard from "@/components/GrowthTasksCard";
-import GrowthAuditReport from "@/components/GrowthAuditReport";
-import ReviewsCard from "@/components/ReviewsCard";
-import { useBusiness } from "@/components/BusinessContext";
+﻿import Link from "next/link";
 
 export default function Home() {
-  const { audit, completedTasks } = useBusiness();
-
   return (
-    <AuthGuard>
-      <DashboardLayout>
-      <h1 className="text-3xl font-bold text-gray-800">
-        Business Dashboard
-      </h1>
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md text-center">
 
-      <p className="mt-2 text-gray-600">
-        Track your business growth with AI.
-      </p>
+        <h1 className="text-4xl font-bold text-gray-900">
+          CLS GROW
+        </h1>
 
-      <div className="grid md:grid-cols-3 gap-6 mt-8">
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold">
-            Business Score
-          </h2>
+        <p className="mt-3 text-lg text-gray-500">
+          Grow Your Business Smarter.
+        </p>
 
-          <p className="text-4xl font-bold text-blue-600 mt-4">
-            {audit.score}/100
-          </p>
+        <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+
+          <Link
+            href="/signup"
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+          >
+            Get Started
+          </Link>
+
+          <div className="mt-5 text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-blue-600 font-semibold hover:underline"
+            >
+              Business Login
+            </Link>
+          </div>
+
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold">
-            Growth Tasks
-          </h2>
-
-          <p className="text-4xl font-bold text-green-600 mt-4">
-            {Math.min(completedTasks, audit.tasks.length)}/{audit.tasks.length}
-          </p>
+        <div className="mt-8">
+          <Link
+            href="/admin/login"
+            className="text-sm text-gray-500 hover:text-gray-800 transition"
+          >
+            Admin Access →
+          </Link>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold">
-            AI Suggestions
-          </h2>
+        <p className="mt-6 text-xs text-gray-400">
+          © 2026 CLS GROW. All rights reserved.
+        </p>
 
-          <p className="text-4xl font-bold text-purple-600 mt-4">
-            {audit.suggestions.length}
-          </p>
-        </div>
       </div>
-
-      <div className="mt-8">
-        <GrowthScoreCard />
-      </div>
-
-      <div className="mt-8">
-        <BusinessProfileCard />
-      </div>
-
-      <div className="mt-8">
-        <GrowthAuditReport />
-      </div>
-
-      <div className="mt-8">
-        <AISuggestionsCard />
-      </div>
-
-      <div className="mt-8">
-        <GrowthTasksCard />
-      </div>
-
-      <div className="mt-8">
-        <ReviewsCard />
-      </div>
-
-      <div className="mt-8">
-        <BusinessProfileForm />
-      </div>
-      </DashboardLayout>
-    </AuthGuard>
+    </main>
   );
 }
-
-
