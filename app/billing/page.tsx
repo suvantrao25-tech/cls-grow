@@ -1,4 +1,4 @@
-
+﻿
 "use client";
 
 import { useEffect, useState } from "react";
@@ -28,20 +28,28 @@ type Payment = {
 
 const plans = [
   {
-    name: "START",
+    name: "LOCAL",
     price: 299,
-    description: "Essential growth tools for small and local businesses.",
-  },
-  {
-    name: "GROW",
-    price: 699,
-    description: "Complete AI-powered business growth system.",
+    description:
+      "An AI growth partner for small and local businesses. CLS GROW tells you what to focus on next, so you do less manual work.",
+    active: true,
     popular: true,
   },
   {
-    name: "PRO",
+    name: "BUSINESS",
+    price: 699,
+    description:
+      "For struggling and small companies that need deeper AI monitoring and practical growth support.",
+    comingSoon: true,
+    popular: false,
+  },
+  {
+    name: "SCALE",
     price: 1299,
-    description: "Advanced growth, automation, and business intelligence.",
+    description:
+      "For medium and growing companies that need advanced growth intelligence, automation and scalable workflows.",
+    comingSoon: true,
+    popular: false,
   },
 ];
 
@@ -124,6 +132,7 @@ export default function BillingPage() {
   }, []);
 
   const currentPlan = subscription?.plan || "FREE";
+  const displayPlan = currentPlan === "START" ? "LOCAL" : currentPlan === "GROW" ? "BUSINESS" : currentPlan === "PRO" ? "SCALE" : currentPlan;
   const currentStatus = subscription?.status || "active";
 
   const currentAmount =
@@ -140,7 +149,7 @@ export default function BillingPage() {
       : "-";
 
   const formatAmount = (amount: number) => {
-    return `₹${amount.toLocaleString("en-IN")}`;
+    return "\u20B9" + amount.toLocaleString("en-IN");
   };
 
   return (
@@ -168,12 +177,12 @@ export default function BillingPage() {
             <p className="text-sm text-gray-500">Current Plan</p>
 
             <h2 className="text-3xl font-bold text-gray-900 mt-1">
-              {loading ? "Loading..." : currentPlan}
+              {loading ? "Loading..." : displayPlan}
             </h2>
 
             <p className="text-gray-600 mt-1">
               {formatAmount(currentAmount)} /{" "}
-              {currentPlan === "FREE" ? "Forever" : billingCycle}
+              {currentPlan === "FREE" ? "15-Day Trial" : billingCycle}
             </p>
           </div>
 
@@ -219,7 +228,7 @@ export default function BillingPage() {
             </p>
 
             <p className="font-semibold text-gray-900 mt-1">
-              {currentPlan === "FREE" ? "Forever" : billingCycle}
+              {currentPlan === "FREE" ? "15-Day Trial" : billingCycle}
             </p>
 
             <p className="text-xs text-gray-500 mt-1">
@@ -291,12 +300,6 @@ export default function BillingPage() {
                 {plan.description}
               </p>
 
-              <Link
-                href="/subscription"
-                className="block text-center w-full mt-5 py-3 rounded-lg bg-gray-900 text-white font-semibold hover:bg-gray-800"
-              >
-                View Plan
-              </Link>
             </div>
           ))}
         </div>
@@ -361,7 +364,7 @@ export default function BillingPage() {
                     className="border-b border-gray-100"
                   >
                     <td className="py-4 px-3 font-semibold text-gray-900">
-                      {payment.plan}
+                      {payment.plan === "START" ? "LOCAL" : payment.plan === "GROW" ? "BUSINESS" : payment.plan === "PRO" ? "SCALE" : payment.plan}
                     </td>
 
                     <td className="py-4 px-3 text-gray-700">
@@ -479,4 +482,20 @@ export default function BillingPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,9 +18,11 @@ type Stats = {
 
 type Business = {
   id: string;
+  user_id: string;
   business_name: string;
   category: string;
   location: string;
+  language?: string;
   created_at: string;
 };
 
@@ -246,7 +248,7 @@ export default function AdminDashboardPage() {
             </p>
 
             <p className="text-3xl font-bold mt-2">
-              ₹{(stats?.totalRevenue ?? 0).toLocaleString("en-IN")}
+              INR {(stats?.totalRevenue ?? 0).toLocaleString("en-IN")}
             </p>
           </div>
 
@@ -286,6 +288,7 @@ export default function AdminDashboardPage() {
                     <th className="text-left p-4">Category</th>
                     <th className="text-left p-4">Location</th>
                     <th className="text-left p-4">Created</th>
+                    <th className="text-left p-4">Action</th>
                   </tr>
                 </thead>
 
@@ -309,6 +312,18 @@ export default function AdminDashboardPage() {
                         {new Date(
                           business.created_at
                         ).toLocaleDateString("en-IN")}
+                      </td>
+
+                      <td className="p-4">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(`/admin/businesses/${business.user_id}`)
+                          }
+                          className="px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 cursor-pointer"
+                        >
+                          View Dashboard
+                        </button>
                       </td>
 
                     </tr>
@@ -453,3 +468,6 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
+
+
+

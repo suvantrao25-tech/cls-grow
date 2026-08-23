@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+﻿import { supabase } from "@/lib/supabase";
 
 export type Plan = "FREE" | "START" | "GROW" | "PRO";
 
@@ -32,17 +32,17 @@ export const PLAN_DETAILS: Record<
     billingCycle: "forever",
   },
   START: {
-    name: "START",
+    name: "LOCAL",
     amount: 299,
     billingCycle: "monthly",
   },
   GROW: {
-    name: "GROW",
+    name: "BUSINESS",
     amount: 699,
     billingCycle: "monthly",
   },
   PRO: {
-    name: "PRO",
+    name: "SCALE",
     amount: 1299,
     billingCycle: "monthly",
   },
@@ -99,4 +99,86 @@ export async function getPaymentHistory() {
 
 export function getPlanDetails(plan: Plan) {
   return PLAN_DETAILS[plan];
+}
+
+
+export function hasPlanAccess(
+  plan: Plan,
+  requiredPlan: Plan
+): boolean {
+  const levels: Record<Plan, number> = {
+    FREE: 0,
+    START: 1,
+    GROW: 2,
+    PRO: 3,
+  };
+
+  return levels[plan] >= levels[requiredPlan];
+}
+
+export const PLAN_FEATURES = {
+  FREE: [
+    "business_profile",
+    "growth_score",
+    "basic_analysis",
+    "ai_suggestions",
+    "growth_tasks",
+    "business_problem",
+    "basic_problem_analysis",
+    "basic_growth_plan",
+    "limited_ai_insights",
+    "growth_trial",
+  ],
+  START: [
+    "regional_languages",
+    "ai_business_guidance",
+    "weekly_growth_move",
+    "customer_offer_ideas",
+    "customer_messages",
+    "customer_retention",
+    "local_growth_suggestions",
+    "simple_growth_recommendations",
+    "growth_progress",
+    "more_ai_actions",
+  ],
+} as const;
+
+export function hasFeature(
+  plan: Plan,
+  feature: string
+): boolean {
+  if (plan === "FREE") {
+    return (PLAN_FEATURES.FREE as readonly string[]).includes(feature);
+  }
+
+  return (
+    (PLAN_FEATURES.FREE as readonly string[]).includes(feature) ||
+    (PLAN_FEATURES.START as readonly string[]).includes(feature)
+  );
+}
+
+export function getLocalGrowthMove(
+  suggestions: string[]
+): string {
+  return suggestions[0] || "Complete your business profile to get your next growth move.";
+}
+
+export function getCustomerOfferIdea(
+  category: string
+): string {
+  if (category) {
+    return `Create a limited-time offer for your ${category} customers this week.`;
+  }
+
+  return "Create a simple limited-time offer for your customers this week.";
+}
+
+export function getCustomerMessage(
+  businessName: string
+): string {
+  return `Hi! ${businessName ? `This is ${businessName}. ` : ""}We have a special offer for you this week. Reply to know more.`;
+}
+
+export function getRetentionIdea(): string {
+  return "Contact customers who have not returned recently and give them a simple reason to come back this week.";
 }

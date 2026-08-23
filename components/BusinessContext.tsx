@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   createContext,
@@ -20,6 +20,7 @@ type BusinessData = {
   location: string;
   phone: string;
   website: string;
+  language: string;
 };
 
 type BusinessContextType = {
@@ -36,6 +37,7 @@ const defaultData: BusinessData = {
   location: "",
   phone: "",
   website: "",
+  language: "en",
 };
 
 const emptyAudit: BusinessAudit = runGrowthAudit(defaultData);
@@ -72,7 +74,7 @@ export function BusinessProvider({
       const { data, error } = await supabase
         .from("business_profiles")
         .select(
-          "business_name, category, location, phone, website"
+          "business_name, category, location, phone, website, language"
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -92,6 +94,7 @@ export function BusinessProvider({
           location: data.location || "",
           phone: data.phone || "",
           website: data.website || "",
+          language: data.language || "en",
         });
       }
     }
@@ -161,3 +164,6 @@ export function useBusiness() {
 
   return context;
 }
+
+
+

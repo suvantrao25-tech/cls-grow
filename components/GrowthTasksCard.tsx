@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useBusiness } from "./BusinessContext";
@@ -69,7 +69,7 @@ export default function GrowthTasksCard() {
         return;
       }
 
-      const newTasks = auditTasks.slice(0, 5).map((task: string) => ({
+      const newTasks = Array.from(new Set(auditTasks)).slice(0, 5).map((task: string) => ({
         user_id: user.id,
         task,
         completed: false,
@@ -121,7 +121,11 @@ export default function GrowthTasksCard() {
     setSavingId(null);
   }
 
-  const completedCount = tasks.filter(
+  const uniqueTasks = Array.from(
+    new Map(tasks.map((item) => [item.task, item])).values()
+  );
+
+  const completedCount = uniqueTasks.filter(
     (task) => task.completed
   ).length;
 
@@ -141,7 +145,7 @@ export default function GrowthTasksCard() {
         </div>
       ) : (
         <div className="mt-5 space-y-3">
-          {tasks.map((item) => (
+          {uniqueTasks.map((item) => (
             <button
               key={item.id}
               type="button"
@@ -180,9 +184,12 @@ export default function GrowthTasksCard() {
       )}
 
       <div className="mt-5 text-sm text-gray-500">
-        Progress: {completedCount}/{tasks.length} Completed
+        Progress: {completedCount}/{uniqueTasks.length} Completed
       </div>
     </div>
   );
 }
+
+
+
 

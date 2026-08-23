@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useBusiness } from "./BusinessContext";
@@ -12,6 +12,7 @@ export default function BusinessProfileForm() {
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
+  const [language, setLanguage] = useState("en");
 
   const [loading, setLoading] = useState(false);
 
@@ -21,6 +22,7 @@ export default function BusinessProfileForm() {
     setLocation(business.location || "");
     setPhone(business.phone || "");
     setWebsite(business.website || "");
+    setLanguage(business.language || "en");
   }, [business]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -46,6 +48,7 @@ export default function BusinessProfileForm() {
       location,
       phone,
       website,
+      language,
     };
 
     const { data: existingProfile, error: existingError } =
@@ -73,6 +76,7 @@ export default function BusinessProfileForm() {
           location,
           phone,
           website,
+          language,
         })
         .eq("id", existingProfile.id)
         .eq("user_id", user.id);
@@ -89,6 +93,7 @@ export default function BusinessProfileForm() {
             location,
             phone,
             website,
+            language,
           },
         ]);
 
@@ -172,3 +177,8 @@ export default function BusinessProfileForm() {
     </div>
   );
 }
+
+
+
+
+

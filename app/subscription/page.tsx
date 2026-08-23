@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -13,10 +13,11 @@ declare global {
 const plans = [
   {
     name: "FREE",
+    paymentPlan: null,
     price: "0",
-    period: "Forever",
+    period: "15-Day Trial",
     description:
-      "Start understanding your business and discover growth opportunities.",
+      "Start your 15-day AI growth trial and discover practical growth opportunities for your business.",
     featured: false,
     comingSoon: false,
     features: [
@@ -28,77 +29,77 @@ const plans = [
       "My Business Problem",
       "Basic Problem Analysis",
       "Basic Growth Plan",
-      "Limited Monitoring",
+      "Limited AI Insights",
+      "15-Day Growth Trial",
     ],
   },
   {
-    name: "START",
+    name: "LOCAL",
+    paymentPlan: "START" as const,
     price: "299",
     period: "/month",
     description:
-      "Essential growth tools for small and local businesses.",
-    featured: false,
+      "An AI growth partner for small and local businesses. CLS GROW tells you what to focus on next, so you do less manual work.",
+    featured: true,
     comingSoon: false,
     features: [
       "Everything in FREE",
-      "Regular Business Analysis",
-      "Local SEO Recommendations",
-      "Social Media Growth",
-      "Basic Competitor Analysis",
-      "Lead Generation Opportunities",
-      "Customer Retention Suggestions",
-      "Weekly Growth Plan",
-      "More AI Actions",
+      "Regional Language Support",
+      "AI Business Guidance",
+      "Weekly Growth Move",
+      "Weekly Customer Offer Ideas",
+      "Ready-to-Use Customer Messages",
+      "Customer Retention Ideas",
+      "Local Business Growth Suggestions",
+      "Simple Growth Recommendations",
       "Growth Progress Tracking",
+      "More AI Actions",
     ],
   },
   {
-    name: "GROW",
+    name: "BUSINESS",
+    paymentPlan: "GROW" as const,
     price: "699",
     period: "/month",
     description:
-      "Your complete AI-powered business growth system.",
-    featured: true,
-    comingSoon: true,
-    features: [
-      "Everything in START",
-      "Continuous Business Monitoring",
-      "Automatic Problem Detection",
-      "AI Growth Strategy",
-      "Advanced Competitor Analysis",
-      "Lead & Conversion Analysis",
-      "Marketing Campaign Recommendations",
-      "Customer Acquisition Strategy",
-      "Customer Retention Strategy",
-      "Advanced Local SEO",
-      "Social Media Growth Strategy",
-      "Monthly Growth Strategy",
-      "Advanced Performance Tracking",
-      "Higher AI Usage",
-      "Growth Opportunity Alerts",
-    ],
-  },
-  {
-    name: "PRO",
-    price: "1,299",
-    period: "/month",
-    description:
-      "Advanced growth, automation and business intelligence.",
+      "For struggling and small companies that need deeper AI monitoring and practical growth support.",
     featured: false,
     comingSoon: true,
     features: [
-      "Everything in GROW",
-      "Advanced Automation",
-      "Multiple Growth Campaigns",
-      "Advanced Business Intelligence",
+      "Everything in LOCAL",
+      "3-Day Business Monitoring",
+      "Automatic Problem Detection",
+      "Customer Reactivation Ideas",
+      "Lead & Conversion Analysis",
+      "Growth Opportunity Alerts",
+      "Marketing Recommendations",
+      "Customer Acquisition Strategy",
+      "Customer Retention Strategy",
+      "Advanced Growth Tracking",
+      "Higher AI Usage",
+    ],
+  },
+  {
+    name: "SCALE",
+    paymentPlan: "PRO" as const,
+    price: "1,299",
+    period: "/month",
+    description:
+      "For medium and growing companies that need advanced growth intelligence, automation and scalable workflows.",
+    featured: false,
+    comingSoon: true,
+    features: [
+      "Everything in BUSINESS",
+      "Advanced Growth Intelligence",
       "Advanced Analytics",
-      "Deeper Competitor Monitoring",
+      "Multiple Growth Campaigns",
+      "Competitor Monitoring",
       "Lead & Funnel Optimization",
       "Advanced Growth Opportunities",
-      "Higher AI Usage",
-      "Priority Processing",
+      "Automation",
       "Advanced Reports",
-      "Powerful Growth Workflows",
+      "Growth Workflows",
+      "Higher AI Usage",
     ],
   },
 ];
@@ -253,7 +254,7 @@ export default function SubscriptionPage() {
         </p>
 
         <h1 className="text-4xl font-bold text-gray-900 mt-2">
-          Choose Your Growth Plan
+          Choose the Right Growth Support for Your Business
         </h1>
 
         <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
@@ -298,7 +299,7 @@ export default function SubscriptionPage() {
             {plan.featured && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">
-                  MOST POPULAR
+                  BEST FOR LOCAL BUSINESSES
                 </span>
               </div>
             )}
@@ -336,19 +337,15 @@ export default function SubscriptionPage() {
                 loadingPlan === plan.name
               }
               onClick={() => {
-                if (
-                  plan.name === "START" ||
-                  plan.name === "GROW" ||
-                  plan.name === "PRO"
-                ) {
-                  handlePayment(plan.name);
+                if (!plan.comingSoon && plan.paymentPlan) {
+                  handlePayment(plan.paymentPlan);
                 }
               }}
               className={`w-full mt-6 py-3 rounded-lg font-semibold transition ${
                 plan.comingSoon ||
                 loadingPlan === plan.name
                   ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-900 text-white hover:bg-gray-800"
+                  : "bg-gray-900 text-white hover:bg-gray-800 cursor-pointer"
               }`}
             >
               {plan.comingSoon
@@ -455,6 +452,19 @@ export default function SubscriptionPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

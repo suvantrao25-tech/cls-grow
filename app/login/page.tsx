@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -32,6 +32,34 @@ export default function LoginPage() {
       return;
     }
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setLoading(false);
+      setError("Login session could not be created.");
+      return;
+    }
+
+    const trialResponse = await fetch("/api/subscription/trial", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    const trialResult = await trialResponse.json();
+
+    if (!trialResponse.ok || !trialResult.success) {
+      setLoading(false);
+      setError(
+        trialResult.error || "Unable to start your free trial."
+      );
+      return;
+    }
+
+    setLoading(false);
     router.push("/dashboard");
     router.refresh();
   }
@@ -144,10 +172,11 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Ãƒâ€šÃ‚Â© 2026 CLS GROW. All rights reserved.
+          ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2026 CLS GROW. All rights reserved.
         </p>
 
       </div>
     </main>
   );
 }
+

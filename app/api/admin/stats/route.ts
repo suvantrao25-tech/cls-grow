@@ -137,6 +137,14 @@ export async function GET(request: Request) {
     }
 
     const businesses = businessesResult.count ?? 0;
+    console.log("BUSINESS COUNT:", businessesResult.count);
+    if (businessesResult.error) {
+      console.error("BUSINESSES COUNT ERROR:", businessesResult.error);
+    }
+    if (recentBusinessesResult.error) {
+      console.error("RECENT BUSINESSES ERROR:", recentBusinessesResult.error);
+    }
+    console.log("RECENT BUSINESSES:", recentBusinessesResult.data);
     const growthTasks = growthTasksResult.count ?? 0;
     const completedTasks = completedTasksResult.count ?? 0;
     const subscriptions = subscriptionsResult.count ?? 0;
