@@ -20,15 +20,15 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
+    if (loginError) {
+      setLoading(false);
+      setError(loginError.message);
       return;
     }
 
@@ -42,6 +42,29 @@ export default function LoginPage() {
       return;
     }
 
+    // Check if the logged-in user is an active admin
+    const adminResponse = await fetch("/api/admin/verify", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    const adminResult = await adminResponse.json();
+
+    // Admin users go directly to the Admin Dashboard.
+    // Do not run the business trial flow for admins.
+    if (
+      adminResponse.ok &&
+      adminResult.authorized === true
+    ) {
+      setLoading(false);
+      router.push("/admin/dashboard");
+      router.refresh();
+      return;
+    }
+
+    // Normal business users use the business trial flow.
     const trialResponse = await fetch("/api/subscription/trial", {
       method: "POST",
       headers: {
@@ -54,7 +77,8 @@ export default function LoginPage() {
     if (!trialResponse.ok || !trialResult.success) {
       setLoading(false);
       setError(
-        trialResult.error || "Unable to start your free trial."
+        trialResult.error ||
+          "Unable to start your free trial."
       );
       return;
     }
@@ -98,7 +122,10 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="mt-6 space-y-5">
+          <form
+            onSubmit={handleLogin}
+            className="mt-6 space-y-5"
+          >
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -172,11 +199,10 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2026 CLS GROW. All rights reserved.
+          © 2026 CLS GROW. All rights reserved.
         </p>
 
       </div>
     </main>
   );
 }
-

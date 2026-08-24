@@ -34,22 +34,33 @@ export default function AuthGuard({
           return;
         }
 
-        // Check whether this user is an active admin.
-        const { data: adminProfile, error } = await supabase
-          .from("admin_profiles")
-          .select("admin_type, status")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        // Verify whether this user is an active admin
+        // through the server-side admin verification endpoint.
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+          router.replace("/login");
+          return;
+        }
+
+        const adminResponse = await fetch("/api/admin/verify", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const adminResult = await adminResponse.json();
 
         if (!mounted) return;
 
+        // Admin accounts are not allowed to use the Business Dashboard.
         if (
-          !error &&
-          adminProfile &&
-          adminProfile.admin_type === "super_admin" &&
-          adminProfile.status === "active"
+          adminResponse.ok &&
+          adminResult.authorized === true
         ) {
-          // Admin accounts must stay inside the admin area.
           router.replace("/admin/dashboard");
           return;
         }
@@ -58,6 +69,7 @@ export default function AuthGuard({
         setChecking(false);
       } catch (error) {
         console.error("AUTH GUARD ERROR:", error);
+
         if (mounted) {
           router.replace("/login");
         }
