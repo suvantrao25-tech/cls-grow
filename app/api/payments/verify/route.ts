@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
@@ -197,6 +197,8 @@ export async function POST(request: Request) {
         {
           success: false,
           error: "Unable to activate subscription",
+          details: subscriptionError?.message || "Unknown database error",
+          code: subscriptionError?.code || null,
         },
         { status: 500 }
       );
@@ -262,3 +264,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
