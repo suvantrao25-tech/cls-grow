@@ -163,45 +163,123 @@ export async function POST(request: Request) {
       });
     }
 
-    // 4. Create subscription
+    // 4. Activate subscription
     const periodStart = new Date();
     const periodEnd = new Date(periodStart);
 
     periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-    const { data: subscription, error: subscriptionError } =
+    // First check for an existing active subscription.
+    // A user normally starts with a FREE trial, so upgrade that row
+    // instead of creating a second subscription.
+    const { data: existingSubscription, error: existingSubscriptionError } =
       await supabaseAdmin
         .from("subscriptions")
-        .insert({
-          user_id: userId,
-          plan,
-          status: "active",
-          billing_cycle: selectedPlan.billingCycle,
-          amount: selectedPlan.amount / 100,
-          currency: "INR",
-          current_period_start: periodStart.toISOString(),
-          current_period_end: periodEnd.toISOString(),
-          razorpay_subscription_id: null,
-          razorpay_customer_id: null,
-        })
-        .select()
-        .single();
+        .select("id, plan, status")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (subscriptionError || !subscription) {
+    if (existingSubscriptionError) {
       console.error(
-        "SUBSCRIPTION INSERT ERROR:",
-        subscriptionError?.message
+        "EXISTING SUBSCRIPTION LOOKUP ERROR:",
+        existingSubscriptionError.message
       );
 
       return NextResponse.json(
         {
           success: false,
-          error: "Unable to activate subscription",
-          details: subscriptionError?.message || "Unknown database error",
-          code: subscriptionError?.code || null,
+          error: "Unable to check existing subscription",
+          details: existingSubscriptionError.message,
+          code: existingSubscriptionError.code || null,
         },
         { status: 500 }
       );
+    }
+
+    let subscription;
+
+    if (existingSubscription) {
+      const { data: updatedSubscription, error: updateSubscriptionError } =
+        await supabaseAdmin
+          .from("subscriptions")
+          .update({
+            plan,
+            status: "active",
+            billing_cycle: selectedPlan.billingCycle,
+            amount: selectedPlan.amount / 100,
+            currency: "INR",
+            current_period_start: periodStart.toISOString(),
+            current_period_end: periodEnd.toISOString(),
+            razorpay_subscription_id: null,
+            razorpay_customer_id: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingSubscription.id)
+          .select()
+          .single();
+
+      if (updateSubscriptionError || !updatedSubscription) {
+        console.error(
+          "SUBSCRIPTION UPDATE ERROR:",
+          updateSubscriptionError?.message
+        );
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Unable to activate subscription",
+            details:
+              updateSubscriptionError?.message ||
+              "Unknown database error",
+            code: updateSubscriptionError?.code || null,
+          },
+          { status: 500 }
+        );
+      }
+
+      subscription = updatedSubscription;
+    } else {
+      const { data: newSubscription, error: subscriptionError } =
+        await supabaseAdmin
+          .from("subscriptions")
+          .insert({
+            user_id: userId,
+            plan,
+            status: "active",
+            billing_cycle: selectedPlan.billingCycle,
+            amount: selectedPlan.amount / 100,
+            currency: "INR",
+            current_period_start: periodStart.toISOString(),
+            current_period_end: periodEnd.toISOString(),
+            razorpay_subscription_id: null,
+            razorpay_customer_id: null,
+          })
+          .select()
+          .single();
+
+      if (subscriptionError || !newSubscription) {
+        console.error(
+          "SUBSCRIPTION INSERT ERROR:",
+          subscriptionError?.message
+        );
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Unable to activate subscription",
+            details:
+              subscriptionError?.message ||
+              "Unknown database error",
+            code: subscriptionError?.code || null,
+          },
+          { status: 500 }
+        );
+      }
+
+      subscription = newSubscription;
     }
 
     // 5. Save payment
@@ -215,7 +293,7 @@ export async function POST(request: Request) {
         plan,
         amount: selectedPlan.amount / 100,
         currency: "INR",
-        status: "paid",
+        status: "success",
         razorpay_payment_id,
         razorpay_order_id,
         razorpay_signature,
@@ -264,4 +342,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
 
