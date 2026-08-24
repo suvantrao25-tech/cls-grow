@@ -314,6 +314,8 @@ export async function POST(request: Request) {
         {
           success: false,
           error: "Unable to save payment",
+          details: paymentError?.message || "Unknown database error",
+          code: paymentError?.code || null,
         },
         { status: 500 }
       );
@@ -342,6 +344,7 @@ export async function POST(request: Request) {
     );
   }
 }
+
 
 
 
