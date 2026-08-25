@@ -35,6 +35,15 @@ type Payment = {
   created_at: string;
 };
 
+type Customer = {
+  id: string;
+  email: string;
+  created_at: string;
+  email_confirmed_at?: string | null;
+  last_sign_in_at?: string | null;
+  banned_until?: string | null;
+};
+
 type Subscription = {
   id: string;
   plan: string;
@@ -53,6 +62,7 @@ export default function AdminDashboardPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -89,6 +99,20 @@ export default function AdminDashboardPage() {
         setBusinesses(result.recentBusinesses ?? []);
         setPayments(result.recentPayments ?? []);
         setSubscriptions(result.recentSubscriptions ?? []);
+
+        const customersResponse = await fetch("/api/admin/customers", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          cache: "no-store",
+        });
+
+        const customersResult = await customersResponse.json();
+
+        if (customersResponse.ok && customersResult.authorized) {
+          setCustomers(customersResult.customers ?? []);
+        }
       } catch (err) {
         console.error("DASHBOARD ERROR:", err);
         setError("Unable to load admin dashboard.");
@@ -264,6 +288,102 @@ export default function AdminDashboardPage() {
 
         </div>
 
+        {/* CUSTOMERS */}
+
+        <div className="mt-6 bg-white border rounded-2xl overflow-hidden">
+
+          <div className="p-6 border-b flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">
+                Customers
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-1">
+                Registered CLS GROW users
+              </p>
+            </div>
+
+            <span className="px-3 py-1 rounded-full bg-gray-100 text-sm font-medium text-gray-700">
+              {customers.length} customers
+            </span>
+          </div>
+
+          {customers.length === 0 ? (
+            <div className="p-6 text-gray-500">
+              No customers found.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4">Email</th>
+                    <th className="text-left p-4">Registered</th>
+                    <th className="text-left p-4">Last Login</th>
+                    <th className="text-left p-4">Status</th>
+                    <th className="text-left p-4">Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {customers.map((customer) => (
+                    <tr key={customer.id} className="border-t">
+
+                      <td className="p-4 font-medium text-gray-900">
+                        {customer.email || "—"}
+                      </td>
+
+                      <td className="p-4 text-gray-500">
+                        {customer.created_at
+                          ? new Date(customer.created_at).toLocaleDateString("en-IN")
+                          : "—"}
+                      </td>
+
+                      <td className="p-4 text-gray-500">
+                        {customer.last_sign_in_at
+                          ? new Date(customer.last_sign_in_at).toLocaleDateString("en-IN")
+                          : "Never"}
+                      </td>
+
+                      <td className="p-4">
+                        {customer.banned_until ? (
+                          <span className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                            Banned
+                          </span>
+                        ) : customer.email_confirmed_at ? (
+                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                            Verified
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
+                            Unverified
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="p-4">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(`/admin/customers/${customer.id}`)
+                          }
+                          className="px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 cursor-pointer"
+                        >
+                          View Profile
+                        </button>
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+            </div>
+          )}
+
+        </div>
+
         {/* RECENT BUSINESSES */}
 
         <div className="mt-6 bg-white border rounded-2xl overflow-hidden">
@@ -297,15 +417,15 @@ export default function AdminDashboardPage() {
                     <tr key={business.id} className="border-t">
 
                       <td className="p-4 font-medium">
-                        {business.business_name || "—"}
+                        {business.business_name || "â€”"}
                       </td>
 
                       <td className="p-4">
-                        {business.category || "—"}
+                        {business.category || "â€”"}
                       </td>
 
                       <td className="p-4">
-                        {business.location || "—"}
+                        {business.location || "â€”"}
                       </td>
 
                       <td className="p-4 text-gray-500">
@@ -368,7 +488,7 @@ export default function AdminDashboardPage() {
                     <tr key={payment.id} className="border-t">
 
                       <td className="p-4 font-medium">
-                        {payment.plan || "—"}
+                        {payment.plan || "â€”"}
                       </td>
 
                       <td className="p-4">
@@ -378,7 +498,7 @@ export default function AdminDashboardPage() {
 
                       <td className="p-4">
                         <span className="px-2 py-1 rounded-full bg-gray-100 text-xs">
-                          {payment.status || "—"}
+                          {payment.status || "â€”"}
                         </span>
                       </td>
 
@@ -430,11 +550,11 @@ export default function AdminDashboardPage() {
                     <tr key={subscription.id} className="border-t">
 
                       <td className="p-4 font-medium">
-                        {subscription.plan || "—"}
+                        {subscription.plan || "â€”"}
                       </td>
 
                       <td className="p-4">
-                        {subscription.billing_cycle || "—"}
+                        {subscription.billing_cycle || "â€”"}
                       </td>
 
                       <td className="p-4">
@@ -446,7 +566,7 @@ export default function AdminDashboardPage() {
 
                       <td className="p-4">
                         <span className="px-2 py-1 rounded-full bg-gray-100 text-xs">
-                          {subscription.status || "—"}
+                          {subscription.status || "â€”"}
                         </span>
                       </td>
 
@@ -461,13 +581,17 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="mt-8 text-center text-xs text-gray-400">
-          CLS GROW Admin • Super Admin Access
+          CLS GROW Admin â€¢ Super Admin Access
         </div>
 
       </div>
     </main>
   );
 }
+
+
+
+
 
 
 
