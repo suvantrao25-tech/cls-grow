@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useEffect, useState } from "react";
@@ -105,7 +105,7 @@ export default function Home() {
 
                   <h2 className="text-2xl font-bold text-gray-900 mt-1">
                     {trial.plan === "START"
-                      ? "LOCAL - ?299/month"
+                      ? "LOCAL - ₹299/month"
                       : "FREE - 15-Day Trial"}
                   </h2>
 
@@ -148,7 +148,7 @@ export default function Home() {
                   className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
                 >
                   {trial.plan === "FREE"
-                    ? "Upgrade to LOCAL - ?299/month"
+                    ? "Upgrade to LOCAL - ₹299/month"
                     : "Manage LOCAL Plan"}
                 </Link>
               </div>
@@ -303,6 +303,7 @@ export default function Home() {
     </AuthGuard>
   );
 }
+
 
 
 
