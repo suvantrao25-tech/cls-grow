@@ -1,12 +1,18 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { name: "Dashboard", href: "/dashboard" },
+  { name: "Dashboard", href: "/" },
+  { name: "Business Profile", href: "/business-profile" },
+  { name: "Growth Score", href: "/growth-score" },
+  { name: "AI Suggestions", href: "/ai-suggestions" },
+  { name: "Tasks", href: "/tasks" },
+  { name: "Reviews", href: "/reviews" },
   { name: "Subscription", href: "/subscription" },
   { name: "Billing", href: "/billing" },
+  { name: "Settings", href: "/settings" },
 ];
 
 export default function Sidebar() {
@@ -26,7 +32,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`block px-4 py-3 rounded-lg transition cursor-pointer ${
+              className={`block px-4 py-3 rounded-lg transition ${
                 active
                   ? "bg-blue-50 text-blue-600 font-semibold"
                   : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useBusiness } from "./BusinessContext";
@@ -171,25 +171,24 @@ export default function BusinessProfileForm() {
           </label>
 
           <select
-            className="w-full border rounded-lg p-3 bg-white"
+            className="w-full border rounded-lg p-3"
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
           >
             <option value="en">English</option>
-            <option value="hi">Hindi (हिन्दी)</option>
-            <option value="gu">Gujarati (ગુજરાતી)</option>
-            <option value="mr">Marathi (मराठी)</option>
-            <option value="bn">Bengali (বাংলা)</option>
-            <option value="ta">Tamil (தமிழ்)</option>
-            <option value="te">Telugu (తెలుగు)</option>
-            <option value="kn">Kannada (ಕನ್ನಡ)</option>
-            <option value="ml">Malayalam (മലയാളം)</option>
-            <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+            <option value="hi">??????</option>
+            <option value="gu">???????</option>
+            <option value="mr">?????</option>
+            <option value="bn">?????</option>
+            <option value="ta">?????</option>
+            <option value="te">??????</option>
+            <option value="kn">?????</option>
+            <option value="ml">??????</option>
+            <option value="pa">??????</option>
           </select>
 
           <p className="text-xs text-gray-500 mt-2">
-            CLS GROW will use this language for supported growth guidance
-            and customer messages.
+            CLS GROW will use this language for supported growth guidance and customer messages.
           </p>
         </div>
 
@@ -205,3 +204,9 @@ export default function BusinessProfileForm() {
     </div>
   );
 }
+
+
+
+
+
+

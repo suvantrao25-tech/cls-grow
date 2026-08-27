@@ -1,0 +1,10 @@
+﻿$paymentId = "pay_TTkET7FW6Sdcp4"
+$orderId = "order_TTkBCdOwoXS7Ez"
+$userId = "148975ba-3b49-4abe-896d-e9865c68a9e6"
+
+Write-Host "Existing Razorpay payment:"
+Write-Host "Payment ID: $paymentId"
+Write-Host "Order ID:   $orderId"
+Write-Host "User ID:    $userId"
+Write-Host ""
+Write-Host "Payment is captured. Next step is database activation."

@@ -14,11 +14,6 @@ import {
   getCustomerOfferIdea,
   getCustomerMessage,
   getRetentionIdea,
-  getRegionalGrowthMove,
-  getRegionalOffer,
-  getRegionalMessage,
-  getRegionalFollowUp,
-  getRegionalReturnOffer,
 } from "@/lib/subscription";
 
 export default function Home() {
@@ -166,7 +161,7 @@ export default function Home() {
             </h2>
 
             <p className="text-gray-600 mt-3">
-              {business.language !== "en" ? getRegionalGrowthMove(business.language) : getLocalGrowthMove(audit.suggestions)}
+              {getLocalGrowthMove(audit.suggestions)}
             </p>
           </div>
 
@@ -181,7 +176,7 @@ export default function Home() {
             </h2>
 
             <p className="text-gray-600 mt-2">
-              {business.language !== "en" ? getRegionalOffer(business.language) : getCustomerOfferIdea(business.category)}
+              {getCustomerOfferIdea(business.category)}
             </p>
 
             <div className="mt-5 bg-gray-50 rounded-xl p-4">
@@ -190,7 +185,7 @@ export default function Home() {
               </p>
 
               <p className="text-gray-600 mt-2">
-                {business.language !== "en" ? getRegionalMessage(business.language, business.businessName) : getCustomerMessage(business.businessName)}
+                {getCustomerMessage(business.businessName)}
               </p>
             </div>
           </div>
@@ -206,7 +201,7 @@ export default function Home() {
             </h2>
 
             <p className="text-gray-600 mt-2">
-              {business.language !== "en" ? getRegionalFollowUp(business.language) : getRetentionIdea()}
+              {getRetentionIdea()}
             </p>
           </div>
 
@@ -303,7 +298,3 @@ export default function Home() {
     </AuthGuard>
   );
 }
-
-
-
-

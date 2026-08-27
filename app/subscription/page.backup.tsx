@@ -13,11 +13,10 @@ declare global {
 const plans = [
   {
     name: "FREE",
-    paymentPlan: null,
     price: "0",
-    period: "15-Day Trial",
+    period: "Forever",
     description:
-      "Start your 15-day AI growth trial and discover practical growth opportunities for your business.",
+      "Start understanding your business and discover growth opportunities.",
     featured: false,
     comingSoon: false,
     features: [
@@ -29,67 +28,77 @@ const plans = [
       "My Business Problem",
       "Basic Problem Analysis",
       "Basic Growth Plan",
-      "Limited AI Insights",
-      "15-Day Growth Trial",
+      "Limited Monitoring",
     ],
   },
   {
-    name: "LOCAL",
-    paymentPlan: "START" as const,
+    name: "START",
     price: "299",
     period: "/month",
     description:
-      "An AI growth partner for small and local businesses. CLS GROW tells you what to focus on next, so you do less manual work.",
-    featured: true,
+      "Essential growth tools for small and local businesses.",
+    featured: false,
     comingSoon: false,
     features: [
-      "Everything in FREE", "Next Growth Move", "Local Visibility Guidance", "Weekly Customer Offer", "Ready-to-Use Customer Message", "Customer Follow-Up", "Customer Return Offer", "Google Business Profile Guidance", "Google Post Creation", "Regional Language Support", "Growth Progress Tracking",
+      "Everything in FREE",
+      "Regular Business Analysis",
+      "Local SEO Recommendations",
+      "Social Media Growth",
+      "Basic Competitor Analysis",
+      "Lead Generation Opportunities",
+      "Customer Retention Suggestions",
+      "Weekly Growth Plan",
+      "More AI Actions",
+      "Growth Progress Tracking",
     ],
   },
   {
-    name: "BUSINESS",
-    paymentPlan: "GROW" as const,
+    name: "GROW",
     price: "699",
     period: "/month",
     description:
-      "For struggling and small companies that need deeper AI monitoring and practical growth support.",
-    featured: false,
+      "Your complete AI-powered business growth system.",
+    featured: true,
     comingSoon: true,
     features: [
-      "Everything in LOCAL",
-      "3-Day Business Monitoring",
+      "Everything in START",
+      "Continuous Business Monitoring",
       "Automatic Problem Detection",
-      "Customer Reactivation Ideas",
+      "AI Growth Strategy",
+      "Advanced Competitor Analysis",
       "Lead & Conversion Analysis",
-      "Growth Opportunity Alerts",
-      "Marketing Recommendations",
+      "Marketing Campaign Recommendations",
       "Customer Acquisition Strategy",
       "Customer Retention Strategy",
-      "Advanced Growth Tracking",
+      "Advanced Local SEO",
+      "Social Media Growth Strategy",
+      "Monthly Growth Strategy",
+      "Advanced Performance Tracking",
       "Higher AI Usage",
+      "Growth Opportunity Alerts",
     ],
   },
   {
-    name: "SCALE",
-    paymentPlan: "PRO" as const,
+    name: "PRO",
     price: "1,299",
     period: "/month",
     description:
-      "For medium and growing companies that need advanced growth intelligence, automation and scalable workflows.",
+      "Advanced growth, automation and business intelligence.",
     featured: false,
     comingSoon: true,
     features: [
-      "Everything in BUSINESS",
-      "Advanced Growth Intelligence",
-      "Advanced Analytics",
+      "Everything in GROW",
+      "Advanced Automation",
       "Multiple Growth Campaigns",
-      "Competitor Monitoring",
+      "Advanced Business Intelligence",
+      "Advanced Analytics",
+      "Deeper Competitor Monitoring",
       "Lead & Funnel Optimization",
       "Advanced Growth Opportunities",
-      "Automation",
-      "Advanced Reports",
-      "Growth Workflows",
       "Higher AI Usage",
+      "Priority Processing",
+      "Advanced Reports",
+      "Powerful Growth Workflows",
     ],
   },
 ];
@@ -244,7 +253,7 @@ export default function SubscriptionPage() {
         </p>
 
         <h1 className="text-4xl font-bold text-gray-900 mt-2">
-          Choose the Right Growth Support for Your Business
+          Choose Your Growth Plan
         </h1>
 
         <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
@@ -289,7 +298,7 @@ export default function SubscriptionPage() {
             {plan.featured && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">
-                  BEST FOR LOCAL BUSINESSES
+                  MOST POPULAR
                 </span>
               </div>
             )}
@@ -327,15 +336,19 @@ export default function SubscriptionPage() {
                 loadingPlan === plan.name
               }
               onClick={() => {
-                if (!plan.comingSoon && plan.paymentPlan) {
-                  handlePayment(plan.paymentPlan);
+                if (
+                  plan.name === "START" ||
+                  plan.name === "GROW" ||
+                  plan.name === "PRO"
+                ) {
+                  handlePayment(plan.name);
                 }
               }}
               className={`w-full mt-6 py-3 rounded-lg font-semibold transition ${
                 plan.comingSoon ||
                 loadingPlan === plan.name
                   ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-900 text-white hover:bg-gray-800 cursor-pointer"
+                  : "bg-gray-900 text-white hover:bg-gray-800"
               }`}
             >
               {plan.comingSoon
@@ -442,20 +455,6 @@ export default function SubscriptionPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

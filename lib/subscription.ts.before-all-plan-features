@@ -1,0 +1,187 @@
+import { supabase } from "@/lib/supabase";
+
+export type Plan = "FREE" | "START" | "GROW" | "PRO";
+
+export type Subscription = {
+  id: string;
+  user_id: string;
+  plan: Plan;
+  status: string;
+  billing_cycle: string;
+  amount: number;
+  currency: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  razorpay_subscription_id: string | null;
+  razorpay_customer_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const PLAN_DETAILS: Record<
+  Plan,
+  {
+    name: string;
+    amount: number;
+    billingCycle: string;
+  }
+> = {
+  FREE: {
+    name: "FREE",
+    amount: 0,
+    billingCycle: "forever",
+  },
+  START: {
+    name: "LOCAL",
+    amount: 299,
+    billingCycle: "monthly",
+  },
+  GROW: {
+    name: "BUSINESS",
+    amount: 699,
+    billingCycle: "monthly",
+  },
+  PRO: {
+    name: "SCALE",
+    amount: 1299,
+    billingCycle: "monthly",
+  },
+};
+
+export async function getCurrentSubscription(): Promise<Subscription | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Subscription load error:", error.message);
+    return null;
+  }
+
+  return data as Subscription | null;
+}
+
+export async function getPaymentHistory() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Payment history error:", error.message);
+    return [];
+  }
+
+  return data || [];
+}
+
+export function getPlanDetails(plan: Plan) {
+  return PLAN_DETAILS[plan];
+}
+
+
+export function hasPlanAccess(
+  plan: Plan,
+  requiredPlan: Plan
+): boolean {
+  const levels: Record<Plan, number> = {
+    FREE: 0,
+    START: 1,
+    GROW: 2,
+    PRO: 3,
+  };
+
+  return levels[plan] >= levels[requiredPlan];
+}
+
+export const PLAN_FEATURES = {
+  FREE: [
+    "business_profile",
+    "growth_score",
+    "basic_analysis",
+    "ai_suggestions",
+    "growth_tasks",
+    "business_problem",
+    "basic_problem_analysis",
+    "basic_growth_plan",
+    "limited_ai_insights",
+    "growth_trial",
+  ],
+
+  START: [
+    "next_growth_move",
+    "local_visibility",
+    "weekly_customer_offer",
+    "customer_message",
+    "customer_follow_up",
+    "customer_return_offer",
+    "google_business_profile",
+    "google_post_creation",
+    "regional_languages",
+    "growth_progress",
+  ],
+} as const;
+
+export function hasFeature(
+  plan: Plan,
+  feature: string
+): boolean {
+  if (plan === "FREE") {
+    return (PLAN_FEATURES.FREE as readonly string[]).includes(feature);
+  }
+
+  return (
+    (PLAN_FEATURES.FREE as readonly string[]).includes(feature) ||
+    (PLAN_FEATURES.START as readonly string[]).includes(feature)
+  );
+}
+
+export function getLocalGrowthMove(
+  suggestions: string[]
+): string {
+  return suggestions[0] || "Complete your business profile to get your next growth move.";
+}
+
+export function getCustomerOfferIdea(
+  category: string
+): string {
+  if (category) {
+    return `Create a limited-time offer for your ${category} customers this week.`;
+  }
+
+  return "Create a simple limited-time offer for your customers this week.";
+}
+
+export function getCustomerMessage(
+  businessName: string
+): string {
+  return `Hi! ${businessName ? `This is ${businessName}. ` : ""}We have a special offer for you this week. Reply to know more.`;
+}
+
+export function getRetentionIdea(): string {
+  return "Contact customers who have not returned recently and give them a simple reason to come back this week.";
+}
+
+

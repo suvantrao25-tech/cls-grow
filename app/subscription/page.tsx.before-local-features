@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -43,7 +43,17 @@ const plans = [
     featured: true,
     comingSoon: false,
     features: [
-      "Everything in FREE", "Next Growth Move", "Local Visibility Guidance", "Weekly Customer Offer", "Ready-to-Use Customer Message", "Customer Follow-Up", "Customer Return Offer", "Google Business Profile Guidance", "Google Post Creation", "Regional Language Support", "Growth Progress Tracking",
+      "Everything in FREE",
+      "Regional Language Support",
+      "AI Business Guidance",
+      "Weekly Growth Move",
+      "Weekly Customer Offer Ideas",
+      "Ready-to-Use Customer Messages",
+      "Customer Retention Ideas",
+      "Local Business Growth Suggestions",
+      "Simple Growth Recommendations",
+      "Growth Progress Tracking",
+      "More AI Actions",
     ],
   },
   {
@@ -442,7 +452,6 @@ export default function SubscriptionPage() {
     </div>
   );
 }
-
 
 
 

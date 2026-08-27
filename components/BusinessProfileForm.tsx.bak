@@ -48,7 +48,6 @@ export default function BusinessProfileForm() {
       location,
       phone,
       website,
-      language,
     };
 
     const { data: existingProfile, error: existingError } =
@@ -76,7 +75,6 @@ export default function BusinessProfileForm() {
           location,
           phone,
           website,
-          language,
         })
         .eq("id", existingProfile.id)
         .eq("user_id", user.id);
@@ -93,7 +91,6 @@ export default function BusinessProfileForm() {
             location,
             phone,
             website,
-            language,
           },
         ]);
 
@@ -165,34 +162,6 @@ export default function BusinessProfileForm() {
           onChange={(e) => setWebsite(e.target.value)}
         />
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Business Language
-          </label>
-
-          <select
-            className="w-full border rounded-lg p-3 bg-white"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="en">English</option>
-            <option value="hi">Hindi (हिन्दी)</option>
-            <option value="gu">Gujarati (ગુજરાતી)</option>
-            <option value="mr">Marathi (मराठी)</option>
-            <option value="bn">Bengali (বাংলা)</option>
-            <option value="ta">Tamil (தமிழ்)</option>
-            <option value="te">Telugu (తెలుగు)</option>
-            <option value="kn">Kannada (ಕನ್ನಡ)</option>
-            <option value="ml">Malayalam (മലയാളം)</option>
-            <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
-          </select>
-
-          <p className="text-xs text-gray-500 mt-2">
-            CLS GROW will use this language for supported growth guidance
-            and customer messages.
-          </p>
-        </div>
-
         <button
           type="submit"
           disabled={loading}
@@ -205,3 +174,5 @@ export default function BusinessProfileForm() {
     </div>
   );
 }
+
+

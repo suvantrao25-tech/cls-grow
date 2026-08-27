@@ -1,0 +1,121 @@
+"use client";
+
+import { useBusiness } from "./BusinessContext";
+
+export default function GoogleBusinessProfileCard() {
+  const { business } = useBusiness();
+
+  const checks = [
+    {
+      label: "Business name",
+      ready: Boolean(business.businessName?.trim()),
+    },
+    {
+      label: "Business category",
+      ready: Boolean(business.category?.trim()),
+    },
+    {
+      label: "Business location",
+      ready: Boolean(business.location?.trim()),
+    },
+    {
+      label: "Phone number",
+      ready: Boolean(business.phone?.trim()),
+    },
+    {
+      label: "Website",
+      ready: Boolean(business.website?.trim()),
+    },
+  ];
+
+  const completed = checks.filter((check) => check.ready).length;
+  const total = checks.length;
+  const percentage = Math.round((completed / total) * 100);
+
+  const searchText = [business.businessName, business.location]
+    .filter(Boolean)
+    .join(", ");
+
+  const googleSearchUrl = searchText
+    ? `https://www.google.com/search?q=${encodeURIComponent(searchText)}`
+    : "https://www.google.com/business/";
+
+  return (
+    <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm">
+      <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+        Local Visibility
+      </p>
+
+      <h2 className="text-xl font-bold text-gray-900 mt-2">
+        Google Business Profile
+      </h2>
+
+      <p className="text-gray-600 mt-2">
+        Check the information customers need to find and contact your
+        business on Google.
+      </p>
+
+      <div className="mt-5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-semibold text-gray-700">
+            Profile Readiness
+          </span>
+
+          <span className="text-sm text-gray-500">
+            {completed}/{total}
+          </span>
+        </div>
+
+        <div className="w-full bg-gray-200 rounded-full h-3">
+          <div
+            className="bg-blue-600 h-3 rounded-full"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <p className="text-sm text-gray-500 mt-2">
+          {percentage}% of your business information is ready to check.
+        </p>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        {checks.map((check) => (
+          <div
+            key={check.label}
+            className="flex items-center justify-between border rounded-lg px-4 py-3"
+          >
+            <span className="text-gray-700">
+              {check.label}
+            </span>
+
+            <span
+              className={
+                check.ready
+                  ? "text-green-600 text-sm font-semibold"
+                  : "text-orange-600 text-sm font-semibold"
+              }
+            >
+              {check.ready ? "Ready" : "Needs attention"}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5">
+        <a
+          href={googleSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
+        >
+          Check on Google
+        </a>
+      </div>
+
+      <p className="text-xs text-gray-500 mt-3">
+        CLS GROW helps you identify improvements. You remain in control of
+        your Google Business Profile.
+      </p>
+    </div>
+  );
+}
