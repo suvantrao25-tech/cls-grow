@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   createContext,
@@ -58,62 +58,135 @@ export function BusinessProvider({
   const [audit, setAudit] =
     useState<BusinessAudit>(emptyAudit);
 
-  // Load logged-in user's business profile from Supabase
+  // Load only the currently authenticated user's business profile
+  async function loadBusinessProfile(userId: string) {
+    const { data, error } = await supabase
+      .from("business_profiles")
+      .select(
+        "business_name, category, location, phone, website, language"
+      )
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        "Business profile load error:",
+        error.message
+      );
+      return;
+    }
+
+    if (data) {
+      const userBusiness: BusinessData = {
+        businessName: data.business_name || "",
+        category: data.category || "",
+        location: data.location || "",
+        phone: data.phone || "",
+        website: data.website || "",
+        language: data.language || "en",
+      };
+
+      setBusiness(userBusiness);
+
+      localStorage.setItem(
+        `cls_grow_business_${userId}`,
+        JSON.stringify(userBusiness)
+      );
+    } else {
+      // No profile for this user
+      setBusiness(defaultData);
+    }
+  }
+
+  // Keep business state isolated to the authenticated user
   useEffect(() => {
     let mounted = true;
 
-    async function loadBusinessProfile() {
+    async function initializeUser() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
-        return;
-      }
+      if (!mounted) return;
 
-      const { data, error } = await supabase
-        .from("business_profiles")
-        .select(
-          "business_name, category, location, phone, website, language"
-        )
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error(
-          "Business profile load error:",
-          error.message
-        );
-        return;
-      }
-
-      if (data && mounted) {
-        setBusiness({
-          businessName: data.business_name || "",
-          category: data.category || "",
-          location: data.location || "",
-          phone: data.phone || "",
-          website: data.website || "",
-          language: data.language || "en",
-        });
+      if (user) {
+        await loadBusinessProfile(user.id);
+      } else {
+        setBusiness(defaultData);
+        setCompletedTasks(0);
       }
     }
 
-    loadBusinessProfile();
+    initializeUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        if (event === "SIGNED_OUT") {
+          // Immediately remove previous user's data from React state
+          setBusiness(defaultData);
+          setCompletedTasks(0);
+          return;
+        }
+
+        if (
+          event === "SIGNED_IN" ||
+          event === "TOKEN_REFRESHED"
+        ) {
+          const user = session?.user;
+
+          if (user) {
+            // Reset first so previous user's data can never remain visible
+            setBusiness(defaultData);
+            setCompletedTasks(0);
+
+            await loadBusinessProfile(user.id);
+          }
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Load completed tasks for current authenticated user
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadUserTasks() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) return;
+
+      if (!user) {
+        setCompletedTasks(0);
+        return;
+      }
+
+      const savedTasks = localStorage.getItem(
+        `cls_grow_tasks_${user.id}`
+      );
+
+      if (savedTasks) {
+        setCompletedTasks(Number(savedTasks));
+      } else {
+        setCompletedTasks(0);
+      }
+    }
+
+    loadUserTasks();
 
     return () => {
       mounted = false;
     };
-  }, []);
-
-  // Load completed tasks for current browser
-  useEffect(() => {
-    const savedTasks =
-      localStorage.getItem("cls_grow_tasks");
-
-    if (savedTasks) {
-      setCompletedTasks(Number(savedTasks));
-    }
   }, []);
 
   // Run growth audit whenever business changes
@@ -122,20 +195,52 @@ export function BusinessProvider({
     setAudit(result);
   }, [business]);
 
-  // Keep local cache for quick UI recovery
+  // Keep a user-specific local cache
   useEffect(() => {
-    localStorage.setItem(
-      "cls_grow_business",
-      JSON.stringify(business)
-    );
+    let active = true;
+
+    async function saveUserBusinessCache() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!active || !user) return;
+
+      localStorage.setItem(
+        `cls_grow_business_${user.id}`,
+        JSON.stringify(business)
+      );
+    }
+
+    saveUserBusinessCache();
+
+    return () => {
+      active = false;
+    };
   }, [business]);
 
-  // Save completed tasks
+  // Save completed tasks for current user only
   useEffect(() => {
-    localStorage.setItem(
-      "cls_grow_tasks",
-      completedTasks.toString()
-    );
+    let active = true;
+
+    async function saveUserTasks() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!active || !user) return;
+
+      localStorage.setItem(
+        `cls_grow_tasks_${user.id}`,
+        completedTasks.toString()
+      );
+    }
+
+    saveUserTasks();
+
+    return () => {
+      active = false;
+    };
   }, [completedTasks]);
 
   return (
@@ -164,6 +269,3 @@ export function useBusiness() {
 
   return context;
 }
-
-
-
