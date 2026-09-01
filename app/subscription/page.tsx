@@ -43,7 +43,7 @@ const plans = [
     featured: true,
     comingSoon: false,
     features: [
-      "Everything in FREE", "Next Growth Move", "Local Visibility Guidance", "Weekly Customer Offer", "Ready-to-Use Customer Message", "Customer Follow-Up", "Customer Return Offer", "Google Business Profile Guidance", "Google Post Creation", "Regional Language Support", "Growth Progress Tracking",
+      "Everything in FREE", "Next Growth Move", "Local Visibility Guidance", "Weekly Customer Offer", "Ready-to-Use Customer Message", "Customer Follow-Up", "Customer Return Offer", "Google Business Profile Guidance", "Google Post Creation", "Regional Language Support", "Growth Progress Tracking", "AI Business Action", "AI Business Video", "Business Connect",
     ],
   },
   {
@@ -442,6 +442,7 @@ export default function SubscriptionPage() {
     </div>
   );
 }
+
 
 
 

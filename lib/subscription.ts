@@ -1,4 +1,4 @@
-﻿import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export type Plan = "FREE" | "START" | "GROW" | "PRO";
 
@@ -140,6 +140,9 @@ export const PLAN_FEATURES = {
     "google_post_creation",
     "regional_languages",
     "growth_progress_tracking",
+    "ai_business_action",
+    "ai_business_video",
+    "business_connect",
   ],
 
   GROW: [
@@ -312,6 +315,7 @@ export function getCustomerMessage(
 export function getRetentionIdea(businessName: string = ""): string {
   return `Follow up with recent customers${businessName ? ` of ${businessName}` : ""} and invite them to return with a simple offer.`;
 }
+
 
 
 
