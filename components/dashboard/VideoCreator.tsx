@@ -1,14 +1,16 @@
-﻿"use client";
+"use client";
 
 import { useRef, useState } from "react";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import { supabase } from "@/lib/supabase";
 
 export default function VideoCreator() {
   const [videoPhotos, setVideoPhotos] = useState<File[]>([]);
   const [videoCreating, setVideoCreating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const [videoLimitMessage, setVideoLimitMessage] = useState<string | null>(null);
 
   const createVideo = async () => {
     if (videoPhotos.length === 0) {
@@ -17,6 +19,65 @@ export default function VideoCreator() {
     }
 
     try {
+      setVideoLimitMessage(null);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("Please log in to create a video.");
+        return;
+      }
+
+      // LOCAL plan is stored as START in subscriptions.
+      const { data: subscription, error: subscriptionError } = await supabase
+        .from("subscriptions")
+        .select("plan, status, current_period_end")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (subscriptionError) {
+        console.error("Subscription check error:", subscriptionError);
+        alert("Unable to verify your subscription. Please try again.");
+        return;
+      }
+
+      if (subscription?.plan === "START" && subscription?.status === "active") {
+        const { data: usage, error: usageError } = await supabase
+          .from("video_usage")
+          .select("last_video_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (usageError) {
+          console.error("Video usage check error:", usageError);
+          alert("Unable to check your video limit. Please try again.");
+          return;
+        }
+
+        if (usage?.last_video_at) {
+          const lastVideo = new Date(usage.last_video_at);
+          const nextVideo = new Date(lastVideo.getTime() + 7 * 24 * 60 * 60 * 1000);
+          const now = new Date();
+
+          if (now < nextVideo) {
+            const dateText = nextVideo.toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            });
+
+            setVideoLimitMessage(
+              `Your weekly video has already been used. Your next video will be available on ${dateText}.`
+            );
+            return;
+          }
+        }
+      }
+
       setVideoCreating(true);
 
       const ffmpeg = new FFmpeg();
@@ -86,6 +147,8 @@ export default function VideoCreator() {
       const audioIndex = videoPhotos.length;
 
       console.log("FFmpeg: starting lightweight encode");
+      ffmpeg.on("log", ({ message }) => console.log("FFmpeg:", message));
+      ffmpeg.on("progress", ({ progress, time }) => console.log("FFmpeg progress:", progress, "time:", time));
 
       await ffmpeg.exec([
         ...inputArgs,
@@ -116,7 +179,8 @@ export default function VideoCreator() {
         "-b:a",
         "64k",
 
-        "-shortest",
+        "-t",
+        String(videoPhotos.length * 5),
         "output.mp4",
       ]);
 
@@ -134,6 +198,41 @@ export default function VideoCreator() {
       }
 
       setVideoUrl(URL.createObjectURL(blob));
+
+      // Consume the weekly video only after successful creation.
+      const {
+        data: { user: completedUser },
+      } = await supabase.auth.getUser();
+
+      if (completedUser) {
+        const { data: completedSubscription } = await supabase
+          .from("subscriptions")
+          .select("plan, status")
+          .eq("user_id", completedUser.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (
+          completedSubscription?.plan === "START" &&
+          completedSubscription?.status === "active"
+        ) {
+          const { error: usageSaveError } = await supabase
+            .from("video_usage")
+            .upsert(
+              {
+                user_id: completedUser.id,
+                last_video_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "user_id" }
+            );
+
+          if (usageSaveError) {
+            console.error("Video usage save error:", usageSaveError);
+          }
+        }
+      }
 
       console.log("Video: ready");
     } catch (error) {
@@ -174,6 +273,12 @@ export default function VideoCreator() {
         </p>
       )}
 
+      {videoLimitMessage && (
+        <p className="mt-3 text-sm text-red-600">
+          {videoLimitMessage}
+        </p>
+      )}
+
       <button
         type="button"
         onClick={createVideo}
@@ -208,3 +313,7 @@ export default function VideoCreator() {
     </div>
   );
 }
+
+
+
+
