@@ -29,11 +29,15 @@ export default function Home() {
   const { business, audit } = useBusiness();
 
   const [trialLoading, setTrialLoading] = useState(true);
+
   const [trial, setTrial] = useState<{
     plan: string;
     status: string;
     trial_ends_at: string | null;
   } | null>(null);
+
+  const isLocalPlan = trial?.plan === "START";
+  const hasBusinessConnect = ["START", "GROW", "PRO"].includes(trial?.plan ?? "");
 
   useEffect(() => {
     async function loadTrial() {
@@ -177,6 +181,8 @@ export default function Home() {
             </div>
           )}
 
+          {isLocalPlan && (
+          <>
           {/* 1. NEXT GROWTH MOVE */}
           <div className="mt-8 bg-white border border-blue-100 rounded-2xl p-6 shadow-sm">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
@@ -193,6 +199,10 @@ export default function Home() {
           </div>
 
           <AIBusinessAction suggestions={audit.suggestions} />
+          </>
+          )}
+          {isLocalPlan && (
+          <>
           {/* 2. GET MORE CUSTOMERS */}
           <div className="mt-6 bg-white border border-green-100 rounded-2xl p-6 shadow-sm">
             <p className="text-sm font-semibold text-green-600 uppercase tracking-wide">
@@ -310,17 +320,20 @@ export default function Home() {
             <GoogleBusinessProfileCard />
           </div>
 
+          </>
+          )}
           {/* 6. BUSINESS PROFILE */}
           <div className="mt-6">
             <div className="mb-3">
               <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                6. Business Profile
+                {trial?.plan === "FREE" ? "1. Business Profile" : "6. Business Profile"}
               </p>
             </div>
 
             <BusinessProfileCard />
           </div>
 
+          {isLocalPlan && (
           <div className="mt-6 bg-white border border-blue-100 rounded-2xl p-6 shadow-sm">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
               7. AI Business Video
@@ -338,7 +351,9 @@ export default function Home() {
               <VideoCreator />
             </div>
           </div>
+          )}
           {/* 8. BUSINESS CONNECT */}
+          {hasBusinessConnect && (
           <div className="mt-6 bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
             <p className="text-sm font-semibold text-teal-600 uppercase tracking-wide">
               8. Business Connect
@@ -356,10 +371,11 @@ export default function Home() {
               </div>
             </div>
           </div>
+          )}
           {/* GROWTH PROGRESS */}
           <div className="mt-8 bg-white rounded-2xl shadow-sm border p-6">
             <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              9. Growth Progress
+              {trial?.plan === "FREE" ? "2. Growth Progress" : "9. Growth Progress"}
             </p>
 
             <div className="grid md:grid-cols-3 gap-5 mt-5">
@@ -427,6 +443,25 @@ export default function Home() {
     </AuthGuard>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
