@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -26,6 +26,9 @@ export default function BusinessConnect() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState<string | null>(null);
   const [openChat, setOpenChat] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchCategory, setSearchCategory] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
 
   useEffect(() => {
     loadData();
@@ -102,6 +105,13 @@ export default function BusinessConnect() {
     setSending(null);
   }
 
+  const filteredBusinesses = businesses.filter((item) => {
+    const nameMatch = item.business_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const categoryMatch = !searchCategory || item.category.toLowerCase().includes(searchCategory.toLowerCase());
+    const locationMatch = !searchLocation || item.location.toLowerCase().includes(searchLocation.toLowerCase());
+    return nameMatch && categoryMatch && locationMatch;
+  });
+
   if (loading) {
     return (
       <div className="mt-6 bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
@@ -125,13 +135,38 @@ export default function BusinessConnect() {
         and chat after they accept.
       </p>
 
-      {businesses.length === 0 ? (
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search business name"
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+        />
+
+        <input
+          type="text"
+          value={searchCategory}
+          onChange={(e) => setSearchCategory(e.target.value)}
+          placeholder="Search category"
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+        />
+
+        <input
+          type="text"
+          value={searchLocation}
+          onChange={(e) => setSearchLocation(e.target.value)}
+          placeholder="Search location"
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+        />
+      </div>
+      {filteredBusinesses.length === 0 ? (
         <p className="text-sm text-gray-500 mt-4">
           No businesses available yet.
         </p>
       ) : (
         <div className="mt-5 space-y-3">
-          {businesses.map((item) => {
+          {filteredBusinesses.map((item) => {
             const connection = getConnection(item.user_id);
 
             const isConnected = connection?.status === "accepted";
@@ -199,4 +234,7 @@ export default function BusinessConnect() {
     </div>
   );
 }
+
+
+
 

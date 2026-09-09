@@ -10,6 +10,7 @@ import GoogleBusinessProfileCard from "@/components/GoogleBusinessProfileCard";
 import BusinessProfileForm from "@/components/BusinessProfileForm";
 import BusinessConnectRequests from "@/components/dashboard/BusinessConnectRequests";
 import BusinessConnect from "@/components/dashboard/BusinessConnect";
+import BusinessBroadcast from "@/components/dashboard/BusinessBroadcast";
 import VideoCreator from "@/components/dashboard/VideoCreator";
 import AIBusinessAction from "@/components/dashboard/AIBusinessAction";
 import { useBusiness } from "@/components/BusinessContext";
@@ -372,10 +373,28 @@ export default function Home() {
             </div>
           </div>
           )}
+          {/* 9. BUSINESS BROADCAST */}
+          <div className="mt-6 bg-white border border-orange-100 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm font-semibold text-orange-600 uppercase tracking-wide">
+              {trial?.plan === "FREE" ? "2. Business Broadcast" : "9. Business Broadcast"}
+            </p>
+
+            <h2 className="text-xl font-bold text-gray-900 mt-2">
+              Share & Discover Business Offers
+            </h2>
+
+            <p className="text-gray-600 mt-2">
+              Share your daily offer and discover products, services and offers from other businesses.
+            </p>
+
+            <div className="mt-5">
+              <BusinessBroadcast />
+            </div>
+          </div>
           {/* GROWTH PROGRESS */}
           <div className="mt-8 bg-white rounded-2xl shadow-sm border p-6">
             <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              {trial?.plan === "FREE" ? "2. Growth Progress" : "9. Growth Progress"}
+              {trial?.plan === "FREE" ? "3. Growth Progress" : "10. Growth Progress"}
             </p>
 
             <div className="grid md:grid-cols-3 gap-5 mt-5">
@@ -443,6 +462,11 @@ export default function Home() {
     </AuthGuard>
   );
 }
+
+
+
+
+
 
 
 
